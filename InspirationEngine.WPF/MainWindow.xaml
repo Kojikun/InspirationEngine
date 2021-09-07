@@ -1,0 +1,71 @@
+﻿<Window x:Class="InspirationEngine.WPF.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:InspirationEngine.WPF"
+        xmlns:tab="clr-namespace:InspirationEngine.WPF.Tabs"
+        mc:Ignorable="d"
+        Title="Inspiration Engine" Height="450" Width="800"
+        Closing="Window_Closing">
+    <Window.CommandBindings>
+        <CommandBinding Command="ApplicationCommands.Close" Executed="CommandClose_Executed"/>
+    </Window.CommandBindings>
+    <Window.InputBindings>
+        <KeyBinding Command="ApplicationCommands.Close" Gesture="Alt+F4" />
+    </Window.InputBindings>
+    <DockPanel>
+        <Menu DockPanel.Dock="Top" Panel.ZIndex="1" Visibility="Collapsed">
+            <Menu.Effect>
+                <DropShadowEffect Direction="270" Opacity="0.5" BlurRadius="5" ShadowDepth="1"/>
+            </Menu.Effect>
+            <MenuItem Header="File">
+                <MenuItem Header="Exit" Command="ApplicationCommands.Close" InputGestureText="Alt+F4"/>
+            </MenuItem>
+        </Menu>
+        <Grid DockPanel.Dock="Bottom">
+            <UniformGrid Rows="{Binding ElementName=TabControl, Path=Items.Count}" Margin="0,2">
+                <!-- UniformRow sizes automatically to UniformGrid; Tab heights are bound to this element height -->
+                <FrameworkElement x:Name="UniformRow"/>
+            </UniformGrid>
+            <TabControl x:Name="TabControl" TabStripPlacement="Left">
+                <TabItem Height="{Binding ElementName=UniformRow, Path=ActualHeight}">
+                    <TabItem.Header>
+                        <TextBlock TextAlignment="Center"><Run Text="YouTube"/><LineBreak/><Run Text="Downloader"/></TextBlock>
+                    </TabItem.Header>
+                    <tab:YoutubeDownloader/>
+                </TabItem>
+                <TabItem Height="{Binding ElementName=UniformRow, Path=ActualHeight}" IsEnabled="False">
+                    <TabItem.Header>
+                        <TextBlock TextAlignment="Center"><Run Text="SoundCloud"/><LineBreak/><Run Text="Downloader"/></TextBlock>
+                    </TabItem.Header>
+                </TabItem>
+                <TabItem Height="{Binding ElementName=UniformRow, Path=ActualHeight}" IsEnabled="False">
+                    <TabItem.Header>
+                        <TextBlock TextAlignment="Center"><Run Text="Random"/><LineBreak/><Run Text="Sample Pack"/><LineBreak/><Run Text="Generator"/></TextBlock>
+                    </TabItem.Header>
+                </TabItem>
+                <TabItem Height="{Binding ElementName=UniformRow, Path=ActualHeight}" IsEnabled="False">
+                    <TabItem.Header>
+                        <TextBlock TextAlignment="Center"><Run Text="Discord"/><LineBreak/><Run Text="Audio"/><LineBreak/><Run Text="Scraper"/></TextBlock>
+                    </TabItem.Header>
+                </TabItem>
+                <TabItem Height="{Binding ElementName=UniformRow, Path=ActualHeight}" IsEnabled="False">
+                    <TabItem.Header>
+                        <TextBlock TextAlignment="Center"><Run Text="Spleeter"/></TextBlock>
+                    </TabItem.Header>
+                </TabItem>
+                <TabItem Height="{Binding ElementName=UniformRow, Path=ActualHeight}" IsEnabled="False">
+                    <TabItem.Header>
+                        <TextBlock TextAlignment="Center"><Run Text="Video"/><LineBreak/><Run Text="to Audio"/></TextBlock>
+                    </TabItem.Header>
+                </TabItem>
+                <TabItem Height="{Binding ElementName=UniformRow, Path=ActualHeight}" IsEnabled="False">
+                    <TabItem.Header>
+                        <TextBlock TextAlignment="Center"><Run Text="Image to"/><LineBreak/><Run Text="Wavetable"/></TextBlock>
+                    </TabItem.Header>
+                </TabItem>
+            </TabControl>
+        </Grid>
+    </DockPanel>
+</Window>

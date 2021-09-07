@@ -1,0 +1,250 @@
+﻿<UserControl x:Class="InspirationEngine.WPF.Tabs.YoutubeDownloader"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:InspirationEngine.WPF.Tabs"
+             xmlns:uc="clr-namespace:InspirationEngine.WPF.UserControls"
+             xmlns:cv="clr-namespace:InspirationEngine.WPF.Converters"
+             xmlns:vr="clr-namespace:InspirationEngine.WPF.ValidationRules"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800" d:Background="White"
+             Loaded="UserControl_Loaded">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../Resources/Icons.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="3*"/>
+        </Grid.ColumnDefinitions>
+        <GroupBox Header="Current Video" DataContext="{Binding SelectedVideo, UpdateSourceTrigger=PropertyChanged}">
+            <GroupBox.Style>
+                <Style TargetType="GroupBox">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding}" Value="{x:Null}">
+                            <Setter Property="IsEnabled" Value="False"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </GroupBox.Style>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Label Content="Title: " VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding Title}" TextWrapping="Wrap" Grid.Column="1" VerticalAlignment="Center"/>
+                <Label Content="URL: " VerticalAlignment="Center" Grid.Row="1"/>
+                <TextBox Text="{Binding Url}" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center"
+                         KeyUp="TextBox_Commit"/>
+                <Image Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" Grid.Row="2" Margin="8,8,8,8"
+                       Source="{Binding CurrentThumbnail}">
+                    <Image.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Copy image" Click="CopyImage_Click"/>
+                            <MenuItem Header="Save image as..." Click="SaveImageAs_Click"/>
+                        </ContextMenu>
+                    </Image.ContextMenu>
+                </Image>
+                <uc:MinMaxSlider Grid.Row="3" Grid.ColumnSpan="2"
+                                 Minimum="0"
+                                 Maximum="{Binding Duration, Converter={cv:TimeSpanToDoubleConverter}}"
+                                 LowerValue="{Binding TimeStart, Mode=TwoWay, Converter={cv:TimeSpanToDoubleConverter}, UpdateSourceTrigger=PropertyChanged}"
+                                 UpperValue="{Binding TimeEnd, Mode=TwoWay, Converter={cv:TimeSpanToDoubleConverter}, UpdateSourceTrigger=PropertyChanged}"
+                                 IsSnapToTickEnabled="True"
+                                 TickFrequency="1"/>
+                <Label Content="Duration: " Grid.Row="4" VerticalAlignment="Center"/>
+                <Grid Grid.Row="4" Grid.Column="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox IsReadOnly="True" Text="{Binding TimeStart}" VerticalAlignment="Center"/>
+                    <TextBox IsReadOnly="True" Text="{Binding TimeEnd}" VerticalAlignment="Center" Grid.Column="1"/>
+                </Grid>
+                <Button Content="Preview Video" Grid.Row="5" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="4,1,4,1"
+                        Click="Preview_Click"
+                        IsEnabled="{Binding IsValid}"/>
+                <Label Content="Export As: " VerticalAlignment="Center" Grid.Row="6"/>
+                <ComboBox Grid.Row="6" Grid.Column="1" VerticalAlignment="Center" SelectedItem="{Binding ExportFormat}" IsEditable="True">
+                    <ComboBox.ItemsSource>
+                        <x:Array Type="{x:Type sys:String}">
+                            <sys:String>wav</sys:String>
+                            <sys:String>mp3</sys:String>
+                            <sys:String>ogg</sys:String>
+                            <sys:String>m4a</sys:String>
+                            <sys:String>flac</sys:String>
+                        </x:Array>
+                    </ComboBox.ItemsSource>
+                </ComboBox>
+            </Grid>
+        </GroupBox>
+        <GridSplitter Width="5" HorizontalAlignment="Stretch" Grid.Column="1"/>
+        <GroupBox Header="Video List" Grid.Column="2">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <DataGrid x:Name="DataGridVideos" AutoGenerateColumns="False"
+                          ItemsSource="{Binding YoutubeVideos}"
+                          SelectedItem="{Binding SelectedVideo, Converter={cv:NewItemPlaceholderConverter}}"
+                          SelectionMode="Single"
+                          SelectionUnit="FullRow"
+                          AddingNewItem="DataGridVideos_AddingNewItem"
+                          CellEditEnding="DataGridVideos_CellEditEnding" Grid.ColumnSpan="2"
+                          Validation.ErrorTemplate="{x:Null}">
+                    <DataGrid.Columns>
+                        <DataGridTemplateColumn Header="Title">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock x:Name="TextBlock_Edit" Text="{Binding Title, Mode=OneWay}"/>
+                                    <DataTemplate.Triggers>
+                                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=DataGridRow}, Path=Item}" Value="{x:Static CollectionView.NewItemPlaceholder}">
+                                            <Setter TargetName="TextBlock_Edit" Property="Text" Value="Double click to Search by Video Title"/>
+                                            <Setter TargetName="TextBlock_Edit" Property="Foreground" Value="Gray"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=DataGridCell}, Path=IsSelected}" Value="True">
+                                            <Setter TargetName="TextBlock_Edit" Property="Foreground" Value="White"/>
+                                        </DataTrigger>
+                                    </DataTemplate.Triggers>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                            <DataGridTemplateColumn.CellEditingTemplate>
+                                <DataTemplate>
+                                    <TextBox Text="{Binding Title}"
+                                             FocusManager.FocusedElement="{Binding RelativeSource={RelativeSource Self}}"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellEditingTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Header="URL">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock x:Name="TextBlock_Edit" Text="{Binding Url, Mode=OneWay}"/>
+                                    <DataTemplate.Triggers>
+                                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=DataGridRow}, Path=Item}" Value="{x:Static CollectionView.NewItemPlaceholder}">
+                                            <Setter TargetName="TextBlock_Edit" Property="Text" Value="Double click to Add Video/Playlist URL"/>
+                                            <Setter TargetName="TextBlock_Edit" Property="Foreground" Value="Gray"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=DataGridCell}, Path=IsSelected}" Value="True">
+                                            <Setter TargetName="TextBlock_Edit" Property="Foreground" Value="White"/>
+                                        </DataTrigger>
+                                    </DataTemplate.Triggers>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                            <DataGridTemplateColumn.CellEditingTemplate>
+                                <DataTemplate>
+                                    <TextBox Text="{Binding Url}"
+                                             FocusManager.FocusedElement="{Binding RelativeSource={RelativeSource Self}}"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellEditingTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="From" Binding="{Binding TimeStart}" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="To" Binding="{Binding TimeEnd}" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="Export As" Binding="{Binding ExportFormat}" IsReadOnly="True"/>
+                    </DataGrid.Columns>
+                    <DataGrid.Style>
+                        <Style TargetType="DataGrid">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsDownloading}" Value="True">
+                                    <Setter Property="RowStyle">
+                                        <Setter.Value>
+                                            <Style TargetType="DataGridRow">
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="DataGridRow">
+                                                            <Border BorderBrush="{TemplateBinding BorderBrush}"
+                                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                                    Background="{TemplateBinding Background}"
+                                                                    SnapsToDevicePixels="True">
+                                                                <Grid>
+                                                                    <ProgressBar Value="{Binding DownloadProgressValue}" Maximum="1"/>
+                                                                    <TextBlock Text="{Binding Title}" VerticalAlignment="Center"/>
+                                                                </Grid>
+                                                            </Border>
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding}" Value="{x:Static CollectionView.NewItemPlaceholder}">
+                                                        <Setter Property="Template">
+                                                            <Setter.Value>
+                                                                <ControlTemplate TargetType="DataGridRow"/>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.Style>
+                </DataGrid>
+                <Grid Grid.Row="1" Grid.ColumnSpan="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <ProgressBar LargeChange="10" SmallChange="1"
+                             Maximum="{Binding MaxProgress, UpdateSourceTrigger=PropertyChanged}"
+                             Value="{Binding Progress, UpdateSourceTrigger=PropertyChanged}"/>
+                    <TextBlock Text="{Binding ProgressText}" TextWrapping="Wrap" TextAlignment="Center" VerticalAlignment="Center"/>
+                    <Button Content="{StaticResource Cancel}" Grid.Column="1"
+                            Click="Button_Cancel_Click"
+                            IsEnabled="{Binding IsCancellable}"/>
+                </Grid>
+                <Label Content="Export To: " Grid.Row="2" VerticalAlignment="Center"/>
+                <DockPanel Grid.Row="2" Grid.Column="1" VerticalAlignment="Center">
+                    <Button Content="Browse" Width="Auto" DockPanel.Dock="Right" VerticalAlignment="Stretch" Padding="4,1,4,1"/>
+                    <TextBox Text="{vr:VRBinding {Binding ExportPath}, ValidationRule={vr:PathValidationRule}}" VerticalAlignment="Stretch"/>
+                </DockPanel>
+                <Grid Grid.Row="3" Grid.ColumnSpan="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <GroupBox Header="Exported File Destination:">
+                        <StackPanel>
+                            <RadioButton GroupName="ExportDestination" Content="Directly in Export Path" Margin="0,2,0,2"
+                                         IsChecked="{Binding ExportDestination[0], Mode=TwoWay}"
+                                         ToolTip="Files will be saved directly to the directory specified above"/>
+                            <RadioButton GroupName="ExportDestination" Content="Timestamped Subdirectory" Margin="0,2,0,2"
+                                         IsChecked="{Binding ExportDestination[1], Mode=TwoWay}"
+                                         ToolTip="Files will be saved in a new subdirectory from the Export Path"/>
+                            <RadioButton GroupName="ExportDestination" Content="Timestamped Zip file" Margin="0,2,0,2"
+                                         IsChecked="{Binding ExportDestination[2], Mode=TwoWay}"
+                                         ToolTip="Files will be zipped into a new zip file in the Export Path" IsEnabled="False"/>
+                        </StackPanel>
+                    </GroupBox>
+                    <Button Content="Export" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="8,4,8,4" FontSize="16" Margin="8,8,8,8"
+                            IsEnabled="{Binding CanExport}"
+                            Click="Button_Export_Click"/>
+                </Grid>
+            </Grid>
+        </GroupBox>
+    </Grid>
+</UserControl>
