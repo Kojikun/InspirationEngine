@@ -8,6 +8,9 @@ using System.Windows.Data;
 
 namespace InspirationEngine.WPF.Converters
 {
+    /// <summary>
+    /// Returns null if value is a NewItemPlaceholder
+    /// </summary>
     [ValueConversion(typeof(object), typeof(object))]
     public class NewItemPlaceholderConverter : BaseConverter, IValueConverter
     {

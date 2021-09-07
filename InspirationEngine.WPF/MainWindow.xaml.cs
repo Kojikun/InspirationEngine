@@ -22,16 +22,29 @@ namespace InspirationEngine.WPF
     /// </summary>
     public partial class MainWindow : Window
     {
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public MainWindow()
         {
             InitializeComponent();
         }
 
+        /// <summary>
+        /// Invoked when something within the MainWindow invokes the CloseCommand
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void CommandClose_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             Close();
         }
 
+        /// <summary>
+        /// Invoked when Window.Close() has been called
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Window_Closing(object sender, CancelEventArgs e)
         {
             Debug.WriteLine("Closing Application...");

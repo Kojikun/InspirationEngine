@@ -21,6 +21,7 @@ namespace InspirationEngine.WPF.ValidationRules
     {
         public override ValidationResult Validate(object value, CultureInfo cultureInfo)
         {
+            /// the reason we don't use <see cref="Utilities.Utilities.TryGetFullPath(string, out string)"/> here is because we want the exception message
             try
             {
                 Path.GetFullPath(value as string);

@@ -8,6 +8,9 @@ using System.Windows.Data;
 
 namespace InspirationEngine.WPF.Converters
 {
+    /// <summary>
+    /// Converts a TimeSpan object into TotalSeconds represented by a double
+    /// </summary>
     [ValueConversion(typeof(TimeSpan), typeof(double))]
     public class TimeSpanToDoubleConverter : BaseConverter, IValueConverter
     {

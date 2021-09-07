@@ -12,6 +12,9 @@ using System.Windows.Media;
 
 namespace InspirationEngine.WPF.Utilities
 {
+    /// <summary>
+    /// Simple enumeration to define the traversal order of a recursive call
+    /// </summary>
     public enum TraversalOrder
     {
         BreadthFirst,
@@ -28,7 +31,8 @@ namespace InspirationEngine.WPF.Utilities
         /// </summary>
         /// <typeparam name="T">Child DependencyObject type</typeparam>
         /// <param name="dependencyObject">The DependencyObject to search for children from</param>
-        /// <param name="recursive">Search the VisualTree recursively (depth-first)</param>
+        /// <param name="recursive">Search the VisualTree recursively</param>
+        /// <param name="order">The traversal order to search the visual tree</param>
         /// <returns>Returns a lazily-evaluated list of <typeparamref name="T"/> that are descendants of <paramref name="dependencyObject"/></returns>
         public static IEnumerable<T> FindVisualChildren<T>(this DependencyObject dependencyObject, bool recursive = true, TraversalOrder order = TraversalOrder.DepthFirst) where T : DependencyObject
         {
@@ -67,13 +71,20 @@ namespace InspirationEngine.WPF.Utilities
         /// <summary>
         /// Returns the first instance of a <typeparamref name="T"/> that is a descendant of 
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="dependencyObject"></param>
-        /// <param name="recursive"></param>
-        /// <returns></returns>
+        /// <typeparam name="T">Child DependencyObject type</typeparam>
+        /// <param name="dependencyObject">The DependencyObject to search for a child from</param>
+        /// <param name="recursive">Search the VisualTree recursively (breadth-first)</param>
+        /// <returns>Returns the first VisualChild of the given type, or null if none was found</returns>
         public static T FindVisualChild<T>(this DependencyObject dependencyObject, bool recursive = true, TraversalOrder order = TraversalOrder.BreadthFirst) where T : DependencyObject =>
             dependencyObject?.FindVisualChildren<T>(recursive, order).FirstOrDefault();
 
+        /// <summary>
+        /// Traverse the VisualTree upwards to find a parent of a given type
+        /// </summary>
+        /// <typeparam name="T">Parent DependencyObject type</typeparam>
+        /// <param name="dependencyObject">The DependencyObject to search for parents from</param>
+        /// <param name="recursive">Whether or not to search parents of parents</param>
+        /// <returns>Returns the first parent of a given type, or null if none was found</returns>
         public static T FindParent<T>(this DependencyObject dependencyObject, bool recursive = true) where T : DependencyObject
         {
             if (dependencyObject is null)
@@ -89,6 +100,11 @@ namespace InspirationEngine.WPF.Utilities
                 return null;
         }
 
+        /// <summary>
+        /// Autofit the column width based off of its contents
+        /// </summary>
+        /// <param name="dataGrid">The DataGrid that contains the given column</param>
+        /// <param name="column">The column to auto-size</param>
         public static void AutoFitColumn(this DataGrid dataGrid, DataGridColumn column)
         {
             column.Width = 0;
@@ -96,30 +112,48 @@ namespace InspirationEngine.WPF.Utilities
             column.Width = DataGridLength.Auto;
         }
 
+        /// <summary>
+        /// Resets the state of a CancellationTokenSource and requests a brand new token
+        /// </summary>
+        /// <param name="source">The CancellationTokenSource to dispose and recreate</param>
+        /// <returns>Returns a shiny new token from the shiny new CancellationTokenSource</returns>
         public static CancellationToken RequestToken(ref CancellationTokenSource source)
         {
+            // dispose source
             if (source is not null)
             {
                 source.Dispose();
             }
 
+            // reinstantiate sourece
             source = new CancellationTokenSource();
 
+            // return brand-spankin new token
             return source.Token;
         }
 
+        /// <summary>
+        /// Attempt to get the full path for a given filename
+        /// </summary>
+        /// <param name="path">The filename to get the full path from</param>
+        /// <param name="result">The resulting path</param>
+        /// <returns>Returns true if a full path was able to be made</returns>
+        /// <remarks>Can be used to get the validity of a path</remarks>
         public static bool TryGetFullPath(string path, out string result)
         {
+            // no need to waste processing power for a new exception if we can just check for empty string
             result = string.Empty;
             if (string.IsNullOrWhiteSpace(path))
                 return false;
 
             bool status = false;
+            // attempt to get full path
             try
             {
                 result = Path.GetFullPath(path);
                 status = true;
             }
+            // if you get caught here, you suck lmao
             catch (ArgumentException) { }
             catch (SecurityException) { }
             catch (NotSupportedException) { }

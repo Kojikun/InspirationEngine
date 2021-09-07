@@ -17,6 +17,8 @@ namespace InspirationEngine.WPF.ValidationRules
     /// <TextBox xmlns:vr="clr-namespace:InspirationEngine.WPF.ValidationRules"
     ///          Text="{vr:VRBinding {Binding Path=SomeTextProperty} ValidationRule={vr:PathValidationRule}}"/>
     /// </example>
+    [ContentProperty("Binding")]
+    [MarkupExtensionReturnType(typeof(object))]
     public class VRBinding : MarkupExtension
     {
         public VRBinding() { }
@@ -25,6 +27,7 @@ namespace InspirationEngine.WPF.ValidationRules
             Binding = binding;
         }
 
+        [ConstructorArgument("binding")]
         public Binding Binding { get; set; }
         public ValidationRule ValidationRule { get; set; }
 

@@ -311,11 +311,20 @@ namespace InspirationEngine.WPF.Models
             return process.Start();
         }
 
+        /// <summary>
+        /// Downloads the audio from the video to a given file path
+        /// </summary>
+        /// <param name="downloadPath">The filename to save the audio to</param>
+        /// <param name="ffmpegPath">The path of the ffmpeg executable to use for download conversion</param>
+        /// <param name="cancellationToken">Token that can be used to cancel the async operation</param>
+        /// <returns></returns>
         public async Task<bool> Download(string downloadPath, string ffmpegPath, CancellationToken cancellationToken = default)
         {
+            // get format from path
             string format = Path.GetExtension(downloadPath).TrimStart('.');
             try
             {
+                // invoke download
                 await new YoutubeInterface().Download(Url, downloadPath, format, ffmpegPath, DownloadProgress, cancellationToken);
                 return true;
             }
@@ -325,10 +334,16 @@ namespace InspirationEngine.WPF.Models
             }
         }
 
+        /// <summary>
+        /// A progress object that is updated during a download operation, where 0 is no progress and 1 is ALL progress
+        /// </summary>
         public Progress<double> DownloadProgress { get; set; } = new Progress<double>();
 
 
         private double _DownloadProgressValue;
+        /// <summary>
+        /// The value returned from <see cref="DownloadProgress"/>
+        /// </summary>
         public double DownloadProgressValue
         {
             get => _DownloadProgressValue;
