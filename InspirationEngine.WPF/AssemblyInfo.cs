@@ -13,4 +13,4 @@ using System.Windows;
 [assembly: AssemblyTitle("InspirationEngine")]
 [assembly: AssemblyDescription("Inspiration Engine")]
 
-[assembly: AssemblyVersion("0.0.*")]
+[assembly: AssemblyVersion("0.1.*")]
