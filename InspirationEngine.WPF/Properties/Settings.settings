@@ -5,5 +5,8 @@
     <Setting Name="ffmpegDir" Type="System.String" Scope="User">
       <Value Profile="(Default)">.\Resources</Value>
     </Setting>
+    <Setting Name="SamplesDir" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
   </Settings>
 </SettingsFile>

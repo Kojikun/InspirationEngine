@@ -1,6 +1,5 @@
 ﻿using InspirationEngine.Core;
 using InspirationEngine.WPF.Models;
-using InspirationEngine.Core.Utilities;
 using static InspirationEngine.WPF.Utilities.Utilities;
 using System;
 using System.Collections.Generic;
@@ -175,6 +174,22 @@ namespace InspirationEngine.WPF.Tabs
         // Using a DependencyProperty as the backing store for IsDownloading.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty IsDownloadingProperty =
             DependencyProperty.Register("IsDownloading", typeof(bool), typeof(YoutubeDownloader), new PropertyMetadata(false));
+
+        /// <summary>
+        /// Whether the user is in the middle of a drag and drop operation
+        /// </summary>
+        public bool IsDragDropDownloading
+        {
+            get { return (bool)GetValue(IsDragDropDownloadingProperty); }
+            set { SetValue(IsDragDropDownloadingProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for IsDragDropDownloading.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty IsDragDropDownloadingProperty =
+            DependencyProperty.Register("IsDragDropDownloading", typeof(bool), typeof(YoutubeDownloader), new PropertyMetadata(false));
+
+        public YoutubeVideoDataObject DragDropDataObject { get; set; }
+
 
         /// <summary>
         /// The CancellationTokenSource to request tokens from
@@ -581,27 +596,25 @@ namespace InspirationEngine.WPF.Tabs
                             // project videos list as a list of Download/Trim tasks
                             .Select(async v =>
                             {
-                                // trimming operation invoked if TimeStart/End are not default values
-                                bool needsTrim = v.TimeStart.TotalSeconds > 0 || v.TimeEnd != v.Duration;
-
-                                // download file as "temp" if it needs trimming
-                                // not sure how to directly download trimmed videos using YoutubeExplode, so unfortunately,
-                                // the full video will be downloaded first and then it'll be trimmed
-                                var filename = Path.Combine(exportDir, $"{v.Title.ToValidFileName()}{(needsTrim ? "_temp" : "")}.{v.ExportFormat.TrimStart('.')}");
-
-                                // Invoke download
-                                await v.Download(filename, FFmpegInterface.ExecutablePath.ffmpeg, token);
-                                if (needsTrim)
+                                // if redownloading after a failed attempt, make sure video title is correct
+                                const string FailureMessage = "Failed to download \"";
+                                bool isInvoke = v.InvokeSearch;
+                                v.InvokeSearch = false;
+                                if (v.Title.StartsWith(FailureMessage))
                                 {
-                                    // filename without "_temp"
-                                    var filename_final = Path.Combine(exportDir, $"{v.Title.ToValidFileName()}.{v.ExportFormat.TrimStart('.')}");
-
-                                    // trim temp file to final file
-                                    await FFmpegInterface.Trim(filename, filename_final, v.TimeStart, v.TimeEnd != v.Duration ? v.TimeEnd : null, token);
-
-                                    // delete temp file
-                                    File.Delete(filename);
+                                    // get substring starting from the end of the failure message to right before the trailing quote mark
+                                    v.Title = v.Title[FailureMessage.Length..^1];
                                 }
+
+                                // download video to exportDir
+                                if (await v.Download(exportDir, FFmpegInterface.ExecutablePath.ffmpeg, token) == null)
+                                {
+                                    // if video failed to download, update gui accordingly
+                                    v.Title = $"Failed to download \"{v.Title}\"";
+                                }
+                                v.InvokeSearch = isInvoke;
+
+                                // Increment main progress bar
                                 Progress += 1d;
                                 UpdateProgressBar();
                             })
@@ -618,6 +631,25 @@ namespace InspirationEngine.WPF.Tabs
                 IsCancellable = false;
                 IsDownloading = false;
                 CanExport = true;
+            }
+        }
+
+        private async void Image_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (sender is Image img && 
+                (SelectedVideo?.IsValid ?? false) && 
+                e.LeftButton == MouseButtonState.Pressed)
+            {
+                if (!IsDragDropDownloading)
+                {
+                    IsDragDropDownloading = true;
+                    var currentCursor = Mouse.OverrideCursor;
+                    Mouse.OverrideCursor = Cursors.Wait;
+                    var video = await YoutubeVideoDataObject.Construct(SelectedVideo);
+                    Mouse.OverrideCursor = currentCursor;
+                    DragDrop.DoDragDrop(img, video.data, DragDropEffects.Move);
+                    IsDragDropDownloading = false;
+                }
             }
         }
     }
