@@ -15,6 +15,8 @@ using System.Diagnostics;
 using System.IO;
 using YoutubeExplode.Common;
 using System.Threading;
+using System.Text.RegularExpressions;
+using InspirationEngine.WPF.Utilities;
 
 namespace InspirationEngine.WPF.Models
 {
@@ -275,7 +277,8 @@ namespace InspirationEngine.WPF.Models
             get => _ExportFormat;
             set
             {
-                _ExportFormat = value;
+                // ensure that the format has no leading (or trailing lol) ., no whitespace and is lowercase
+                _ExportFormat = Regex.Replace(value, @"\s+", "", RegexOptions.Singleline).Trim('.').ToLowerInvariant();
                 NotifyPropertyChanged();
             }
         }
@@ -314,24 +317,46 @@ namespace InspirationEngine.WPF.Models
         /// <summary>
         /// Downloads the audio from the video to a given file path
         /// </summary>
-        /// <param name="downloadPath">The filename to save the audio to</param>
+        /// <param name="downloadDirectory">The directory to save the file to</param>
         /// <param name="ffmpegPath">The path of the ffmpeg executable to use for download conversion</param>
         /// <param name="cancellationToken">Token that can be used to cancel the async operation</param>
-        /// <returns></returns>
-        public async Task<bool> Download(string downloadPath, string ffmpegPath, CancellationToken cancellationToken = default)
+        /// <returns>Returns the fully qualified path of the downloaded file, or null if unsuccessful</returns>
+        public async Task<string> Download(string downloadDirectory, string ffmpegPath, CancellationToken cancellationToken = default)
         {
-            // get format from path
-            string format = Path.GetExtension(downloadPath).TrimStart('.');
+            // trimming operation invoked if TimeStart/End are not default values
+            bool needsTrim = TimeStart.TotalSeconds > 0 || TimeEnd != Duration;
+
+            // download file as "temp" if it needs trimming
+            // not sure how to directly download trimmed videos using YoutubeExplode, so unfortunately,
+            // the full video will be downloaded first and then it'll be trimmed
+            string filePath = Path.Combine(downloadDirectory, $"{Title.ToValidFileName()}{(needsTrim ? "_temp" : "")}.{ExportFormat}").EnsureUniqueFile();
+
             try
             {
                 // invoke download
-                await new YoutubeInterface().Download(Url, downloadPath, format, ffmpegPath, DownloadProgress, cancellationToken);
-                return true;
+                await new YoutubeInterface().Download(Url, filePath, ExportFormat, ffmpegPath, DownloadProgress, cancellationToken);
             }
             catch (Exception)
             {
-                return false;
+                // download failed lol
+                return null;
             }
+
+            // if trimming is required, "filePath" is the name of a temp file
+            if (needsTrim)
+            {
+                // final file name will be without _temp suffix
+                string filePath_temp = filePath;
+                filePath = Path.Combine(downloadDirectory, $"{Title.ToValidFileName()}.{ExportFormat}").EnsureUniqueFile();
+
+                // trim temp file and save as final file
+                await FFmpegInterface.Trim(filePath_temp, filePath, TimeStart, TimeEnd != Duration ? TimeEnd : null, cancellationToken);
+
+                // delete temp file
+                File.Delete(filePath_temp);
+            }
+
+            return filePath;
         }
 
         /// <summary>

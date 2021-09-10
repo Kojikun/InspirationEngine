@@ -161,5 +161,39 @@ namespace InspirationEngine.WPF.Utilities
 
             return status;
         }
+
+        /// <summary>
+        /// Converts any invalid characters within the file name into underscores
+        /// </summary>
+        /// <param name="filename">The filename to check</param>
+        /// <returns>Returns a new filename that is guarenteed to have valid characters</returns>
+        public static string ToValidFileName(this string filename) =>
+            string.Join('_', filename.Split(Path.GetInvalidFileNameChars(), StringSplitOptions.RemoveEmptyEntries));
+
+        /// <summary>
+        /// Returns a fully qualified file path that is guarenteed to not exist
+        /// </summary>
+        /// <param name="path">The path to the file</param>
+        /// <returns>Returns a fully qualified path that leads to a file that has yet to exist</returns>
+        public static string EnsureUniqueFile(this string path)
+        {
+            var fullPath = Path.GetFullPath(path);
+            int i = 1;
+            var og_filename = Path.GetFileNameWithoutExtension(fullPath);
+
+            // if file already exists
+            while (File.Exists(fullPath))
+            {
+                var dirParts = (
+                    dir: Path.GetDirectoryName(fullPath),
+                    file: Path.GetFileNameWithoutExtension(fullPath),
+                    ext: Path.GetExtension(fullPath));
+                dirParts.file = $"{og_filename} ({i++})";
+                // Filename will now be "dir\path (i).ext" kinda like how Windows deals with copies
+                fullPath = Path.Combine(dirParts.dir, $"{dirParts.file}{dirParts.ext}");
+            }
+
+            return fullPath;
+        }
     }
 }

@@ -34,5 +34,17 @@ namespace InspirationEngine.WPF.Properties {
                 this["ffmpegDir"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string SamplesDir {
+            get {
+                return ((string)(this["SamplesDir"]));
+            }
+            set {
+                this["SamplesDir"] = value;
+            }
+        }
     }
 }

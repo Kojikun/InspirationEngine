@@ -15,6 +15,7 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="../Resources/Icons.xaml"/>
+                <ResourceDictionary Source="../Resources/CustomControls.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
@@ -53,15 +54,59 @@
                 <Label Content="URL: " VerticalAlignment="Center" Grid.Row="1"/>
                 <TextBox Text="{Binding Url}" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center"
                          KeyUp="TextBox_Commit"/>
-                <Image Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" Grid.Row="2" Margin="8,8,8,8"
-                       Source="{Binding CurrentThumbnail}">
-                    <Image.ContextMenu>
-                        <ContextMenu>
-                            <MenuItem Header="Copy image" Click="CopyImage_Click"/>
-                            <MenuItem Header="Save image as..." Click="SaveImageAs_Click"/>
-                        </ContextMenu>
-                    </Image.ContextMenu>
-                </Image>
+                <Grid Grid.Row="2" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="8,8,8,8">
+                    <Image x:Name="Image_Thumbnail" Source="{Binding CurrentThumbnail}"
+                           MouseMove="Image_MouseMove">
+                        <Image.ToolTip>
+                            <TextBlock>
+                                <Run>Drag this thumbnail to directly Export the audio into your DAW/File System.</Run>
+                                <LineBreak/>
+                                <Run FontStyle="Italic">Note: Do not let go of the left mouse button until the progress bar is at 100%.</Run>
+                            </TextBlock>
+                        </Image.ToolTip>
+                        <Image.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Copy image" Click="CopyImage_Click"/>
+                                <MenuItem Header="Save image as..." Click="SaveImageAs_Click"/>
+                            </ContextMenu>
+                        </Image.ContextMenu>
+                        <Image.Style>
+                            <Style TargetType="Image">
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Cursor" Value="Hand"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Image.Style>
+                    </Image>
+                    <Rectangle Opacity="0.5" Fill="White"
+                               IsHitTestVisible="False"
+                               Visibility="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:YoutubeDownloader}, Path=IsDragDropDownloading, Converter={cv:BoolToVisibilityConverter}}"/>
+                    <uc:CircularProgressBar Style="{StaticResource CircularProgressBar}"
+                                            IsHitTestVisible="False"
+                                            Visibility="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:YoutubeDownloader}, Path=IsDragDropDownloading, Converter={cv:BoolToVisibilityConverter}}"
+                                            Maximum="1"
+                                            Value="{Binding DownloadProgressValue}"
+                                            />
+                    <Border BorderBrush="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" 
+                            BorderThickness="1,1,1,1"
+                            IsHitTestVisible="False">
+                        <Border.Effect>
+                            <BlurEffect Radius="2"/>
+                        </Border.Effect>
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="Visibility" Value="Hidden"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ElementName=Image_Thumbnail, Path=IsMouseOver}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                    </Border>
+                </Grid>
                 <uc:MinMaxSlider Grid.Row="3" Grid.ColumnSpan="2"
                                  Minimum="0"
                                  Maximum="{Binding Duration, Converter={cv:TimeSpanToDoubleConverter}}"
