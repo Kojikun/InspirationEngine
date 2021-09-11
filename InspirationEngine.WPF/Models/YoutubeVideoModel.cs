@@ -61,6 +61,18 @@ namespace InspirationEngine.WPF.Models
                 {
                     switch (e.PropertyName)
                     {
+                        case nameof(Video):
+                            if (Video is not null)
+                            {
+                                StreamUrl = new Uri(await new YoutubeInterface().GetVideoStream(Url));
+                            }
+                            break;
+                        case nameof(StreamUrl):
+                            if (StreamUrl is not null)
+                            {
+                                PreviewViewable = await StreamUrl.IsAccessibleAsync();
+                            }
+                            break;
                         case nameof(Title):
                             // Get First Video using new title value
                             try
@@ -102,7 +114,7 @@ namespace InspirationEngine.WPF.Models
         }
 
         /// <summary>
-        /// Whether or not to search by Title or URL upon property changed
+        /// Whether or not to invoke any asynchronous operations upon PropertyChanged
         /// </summary>
         public bool InvokeSearch { get; set; }
 
@@ -140,6 +152,8 @@ namespace InspirationEngine.WPF.Models
 
                 // restore invoke search value
                 InvokeSearch = invokeSearchTemp;
+
+                // invoke async changes
                 NotifyPropertyChanged();
             }
         }
@@ -266,6 +280,29 @@ namespace InspirationEngine.WPF.Models
         /// The thumbnail currently being displayed to the user
         /// </summary>
         public BitmapImage CurrentThumbnail { get => Thumbnails.ElementAtOrDefault(CurrentThumbnailIndex); }
+
+
+        private Uri _StreamUrl;
+        public Uri StreamUrl
+        {
+            get => _StreamUrl;
+            set
+            {
+                _StreamUrl = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        private bool _PreviewViewable;
+        public bool PreviewViewable
+        {
+            get => _PreviewViewable;
+            set
+            {
+                _PreviewViewable = value;
+                NotifyPropertyChanged();
+            }
+        }
 
 
         private string _ExportFormat;

@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:InspirationEngine.WPF"
         xmlns:tab="clr-namespace:InspirationEngine.WPF.Tabs"
         mc:Ignorable="d"
-        Title="Inspiration Engine" Height="450" Width="800"
+        Title="Inspiration Engine" Height="600" Width="800"
         Closing="Window_Closing">
     <Window.CommandBindings>
         <CommandBinding Command="ApplicationCommands.Close" Executed="CommandClose_Executed"/>
@@ -63,6 +63,11 @@
                 <TabItem Height="{Binding ElementName=UniformRow, Path=ActualHeight}" IsEnabled="False">
                     <TabItem.Header>
                         <TextBlock TextAlignment="Center"><Run Text="Image to"/><LineBreak/><Run Text="Wavetable"/></TextBlock>
+                    </TabItem.Header>
+                </TabItem>
+                <TabItem Height="{Binding ElementName=UniformRow, Path=ActualHeight}">
+                    <TabItem.Header>
+                        <TextBlock TextAlignment="Center" Text="Settings"/>
                     </TabItem.Header>
                 </TabItem>
             </TabControl>

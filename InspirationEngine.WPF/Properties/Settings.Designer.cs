@@ -46,5 +46,36 @@ namespace InspirationEngine.WPF.Properties {
                 this["SamplesDir"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute(@"<?xml version=""1.0"" encoding=""utf-16""?>
+<ArrayOfString xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">
+  <string>wav</string>
+  <string>mp3</string>
+  <string>ogg</string>
+  <string>m4a</string>
+  <string>flac</string>
+</ArrayOfString>")]
+        public global::System.Collections.Specialized.StringCollection AudioFormats {
+            get {
+                return ((global::System.Collections.Specialized.StringCollection)(this["AudioFormats"]));
+            }
+            set {
+                this["AudioFormats"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool PreviewVideo {
+            get {
+                return ((bool)(this["PreviewVideo"]));
+            }
+            set {
+                this["PreviewVideo"] = value;
+            }
+        }
     }
 }

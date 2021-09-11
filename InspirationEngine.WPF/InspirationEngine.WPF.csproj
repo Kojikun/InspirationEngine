@@ -13,6 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Ookii.Dialogs.Wpf" Version="4.0.0" />
     <PackageReference Include="System.Linq.Async" Version="5.0.0" />
   </ItemGroup>
 
@@ -46,5 +47,4 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
   </ItemGroup>
-
 </Project>

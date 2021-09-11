@@ -110,6 +110,7 @@ namespace InspirationEngine.WPF.UserControls
         public static readonly DependencyProperty TicksProperty =
             DependencyProperty.Register("Ticks", typeof(DoubleCollection), typeof(MinMaxSlider), new UIPropertyMetadata(null));
 
+
         /// <summary>
         /// Constructor
         /// </summary>

@@ -110,7 +110,7 @@ namespace InspirationEngine.Core
         /// <param name="progress">Progress object to send download progress to</param>
         /// <param name="cancellationToken">Token that can be used to cancel the async operation</param>
         /// <returns>async void</returns>
-        public async ValueTask Download(VideoId url, string downloadPath, string format, string ffmpegPath, IProgress<double> progress, CancellationToken cancellationToken)
+        public async ValueTask Download(VideoId url, string downloadPath, string format, string ffmpegPath, IProgress<double> progress, CancellationToken cancellationToken = default)
         {
             // get video metadata
             var streamManifest = await youtube.Videos.Streams.GetManifestAsync(url, cancellationToken);
@@ -132,6 +132,12 @@ namespace InspirationEngine.Core
                     .SetFFmpegPath(ffmpegPath)
                     .Build(),
                 progress, cancellationToken);
+        }
+
+        public async ValueTask<string> GetVideoStream(VideoId url, CancellationToken cancellationToken = default)
+        {
+            var streamManifest = await youtube.Videos.Streams.GetManifestAsync(url, cancellationToken);
+            return streamManifest?.GetMuxedStreams().GetWithHighestVideoQuality()?.Url;
         }
     }
 }

@@ -13,5 +13,9 @@ namespace InspirationEngine.WPF
     /// </summary>
     public partial class App : Application
     {
+        private void Application_Startup(object sender, StartupEventArgs e)
+        {
+            //InspirationEngine.WPF.Properties.Settings.Default
+        }
     }
 }

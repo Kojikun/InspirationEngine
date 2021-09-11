@@ -1,6 +1,7 @@
 ﻿using InspirationEngine.Core;
 using InspirationEngine.WPF.Models;
 using static InspirationEngine.WPF.Utilities.Utilities;
+using InspirationEngine.WPF.Properties;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -24,6 +25,8 @@ using Microsoft.Win32;
 using System.IO;
 using System.Diagnostics;
 using System.Collections.Specialized;
+using Ookii.Dialogs.Wpf;
+using System.Runtime.Versioning;
 
 namespace InspirationEngine.WPF.Tabs
 {
@@ -50,11 +53,21 @@ namespace InspirationEngine.WPF.Tabs
         // Using a DependencyProperty as the backing store for SelectedVideo.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty SelectedVideoProperty =
             DependencyProperty.Register("SelectedVideo", typeof(YoutubeVideoModel), typeof(YoutubeDownloader), new PropertyMetadata(null, 
-                (s, e) =>
+                async (s, e) =>
                 {
                     if (e.NewValue is YoutubeVideoModel video)
                     {
                         video.CurrentThumbnailIndex = 0;
+                        if (Settings.Default.PreviewVideo && s is YoutubeDownloader youtubeDownloader)
+                        {
+                            youtubeDownloader.Button_Preview.Content = youtubeDownloader.PreviewState.Preview;
+                            if (video.StreamUrl is not null && await video.StreamUrl?.IsAccessibleAsync())
+                            {
+                                youtubeDownloader.MediaElement_VideoPreview.Position = video.TimeStart;
+                                youtubeDownloader.MediaElement_VideoPreview.Play();
+                                youtubeDownloader.MediaElement_VideoPreview.Pause();
+                            }
+                        }    
                     }
                 },
                 (s, data) =>
@@ -115,7 +128,7 @@ namespace InspirationEngine.WPF.Tabs
         // Using a DependencyProperty as the backing store for ExportPath.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty ExportPathProperty =
             DependencyProperty.Register("ExportPath", typeof(string), typeof(YoutubeDownloader),
-                new PropertyMetadata(Environment.GetFolderPath(Environment.SpecialFolder.MyMusic)),
+                new PropertyMetadata(Properties.Settings.Default.SamplesDir),
                 value => TryGetFullPath(value as string, out _));
 
         /// <summary>
@@ -190,6 +203,21 @@ namespace InspirationEngine.WPF.Tabs
 
         public YoutubeVideoDataObject DragDropDataObject { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public TimeSpan PreviewVideoPosition
+        {
+            get { return (TimeSpan)GetValue(PreviewVideoPositionProperty); }
+            set { SetValue(PreviewVideoPositionProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for PreviewVideoPosition.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty PreviewVideoPositionProperty =
+            DependencyProperty.Register("PreviewVideoPosition", typeof(TimeSpan), typeof(YoutubeDownloader), new PropertyMetadata(new TimeSpan()));
+
+
+
 
         /// <summary>
         /// The CancellationTokenSource to request tokens from
@@ -199,6 +227,16 @@ namespace InspirationEngine.WPF.Tabs
         /// </remarks>
         private CancellationTokenSource CancellationToken;
 
+        private DispatcherTimer PreviewVideoTracker { get; } =
+            new DispatcherTimer()
+            {
+                Interval = TimeSpan.FromSeconds(1)
+            };
+
+        public const string PreviewVideo = "Preview Video";
+        public const string StopPreview = "Stop Preview";
+        public (string Preview, string Stop) PreviewState { get; } = (PreviewVideo, StopPreview);
+
         /// <summary>
         /// Constructor
         /// </summary>
@@ -206,8 +244,17 @@ namespace InspirationEngine.WPF.Tabs
         {
             InitializeComponent();
             DataContext = this;
-            ExportPath = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
             YoutubeVideos.CollectionChanged += YoutubeVideos_CollectionChanged;
+            PreviewVideoTracker.Tick += (s, e) =>
+            {
+                PreviewVideoPosition = MediaElement_VideoPreview.Position;
+                if (MediaElement_VideoPreview.Position >= (SelectedVideo?.TimeEnd ?? new TimeSpan()))
+                {
+                    MediaElement_VideoPreview.Stop();
+                    if (s is DispatcherTimer timer && timer.Tag is Button previewButton)
+                        previewButton.Content = PreviewState.Preview;
+                }
+            };
         }
 
         /// <summary>
@@ -251,9 +298,19 @@ namespace InspirationEngine.WPF.Tabs
         {
             // Video reference can be updated asynchronously after the video has been added to the collection
             // Notify collection if the video has changed to allow for valid video searching for CanExport
-            if (sender is YoutubeVideoModel video && video.IsValid && e.PropertyName == nameof(YoutubeVideoModel.Video))
+            if (sender is YoutubeVideoModel video && video.IsValid)
             {
-                YoutubeVideos_CollectionChanged(YoutubeVideos, null);
+                switch (e.PropertyName)
+                {
+                    case nameof(YoutubeVideoModel.Video):
+                        YoutubeVideos_CollectionChanged(YoutubeVideos, null);
+                        break;
+                    case nameof(YoutubeVideoModel.PreviewViewable):
+                        MediaElement_VideoPreview.Position = video.TimeStart;
+                        MediaElement_VideoPreview.Play();
+                        MediaElement_VideoPreview.Pause();
+                        break;
+                }
             }
         }
 
@@ -328,8 +385,8 @@ namespace InspirationEngine.WPF.Tabs
                                                     {
                                                         var newVideo = new YoutubeVideoModel()
                                                         {
-                                                            Video = video,
-                                                            InvokeSearch = true
+                                                            InvokeSearch = true,
+                                                            Video = video
                                                         };
                                                         newVideo.PropertyChanged += NewVideo_PropertyChanged;
                                                         YoutubeVideos.Add(newVideo);
@@ -437,9 +494,37 @@ namespace InspirationEngine.WPF.Tabs
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void Preview_Click(object sender, RoutedEventArgs e)
+        private void Button_Preview_Click(object sender, RoutedEventArgs e)
         {
-            SelectedVideo?.Navigate();
+            if (sender is Button button && button.Content is string label)
+            {
+                PreviewVideoTracker.Tag = button;
+                if (Settings.Default.PreviewVideo && SelectedVideo?.StreamUrl != null && SelectedVideo.PreviewViewable)
+                {
+                    switch(label)
+                    {
+                        case PreviewVideo:
+                            button.Content = PreviewState.Stop;
+                            PreviewVideoPosition = SelectedVideo.TimeStart;
+                            MediaElement_VideoPreview.Position = SelectedVideo.TimeStart;
+                            MediaElement_VideoPreview.Play();
+                            PreviewVideoTracker.Stop();
+                            PreviewVideoTracker.Start();
+                            break;
+                        case StopPreview:
+                            button.Content = PreviewState.Preview;
+                            MediaElement_VideoPreview.Stop();
+                            PreviewVideoTracker.Stop();
+                            break;
+                    }
+                }
+                else
+                {
+                    button.Content = PreviewState.Preview;
+                    SelectedVideo?.Navigate();
+                }
+
+            }
         }
 
         /// <summary>
@@ -636,7 +721,7 @@ namespace InspirationEngine.WPF.Tabs
 
         private async void Image_MouseMove(object sender, MouseEventArgs e)
         {
-            if (sender is Image img && 
+            if (sender is FrameworkElement img && 
                 (SelectedVideo?.IsValid ?? false) && 
                 e.LeftButton == MouseButtonState.Pressed)
             {
@@ -650,6 +735,31 @@ namespace InspirationEngine.WPF.Tabs
                     DragDrop.DoDragDrop(img, video.data, DragDropEffects.Copy);
                     IsDragDropDownloading = false;
                 }
+            }
+        }
+
+        [SupportedOSPlatform("Windows7.0")]
+        private void Button_Browse_Click(object sender, RoutedEventArgs e)
+        {
+            var dlg = new VistaFolderBrowserDialog();
+            if (TryGetFullPath(ExportPath, out string startingPath))
+                dlg.SelectedPath = startingPath;
+
+            if (dlg.ShowDialog() == true)
+                ExportPath = dlg.SelectedPath;
+        }
+
+        private void ExportTo_Revert_Click(object sender, RoutedEventArgs e)
+        {
+            ExportPath = Settings.Default.DefaultValue<string>(Setting(nameof(Settings.Default.SamplesDir)));
+        }
+
+        private void DataGridVideos_PreparingCellForEdit(object sender, DataGridPreparingCellForEditEventArgs e)
+        {
+            if (e.EditingElement is ContentPresenter templateColumnEditContent &&
+                templateColumnEditContent.FindVisualChild<TextBox>() is not null and TextBox textBox)
+            {
+                textBox.SelectAll();
             }
         }
     }

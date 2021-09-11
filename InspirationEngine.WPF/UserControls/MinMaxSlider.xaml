@@ -207,7 +207,7 @@
                     </Border>
                     <Track x:Name="PART_Track" Grid.Column="1">
                         <Track.Thumb>
-                            <Thumb x:Name="Thumb" Focusable="False" Width="18" OverridesDefaultStyle="True" Template="{StaticResource SliderThumbHorizontalDefault}" HorizontalAlignment="Center" Height="11"/>
+                            <Thumb x:Name="Thumb" Focusable="False" Width="18" OverridesDefaultStyle="True" Template="{StaticResource SliderThumbVerticalDefault}" HorizontalAlignment="Center" Height="11"/>
                         </Track.Thumb>
                     </Track>
                 </Grid>

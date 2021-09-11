@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Security;
 using System.Text;
 using System.Threading;
@@ -194,6 +196,42 @@ namespace InspirationEngine.WPF.Utilities
             }
 
             return fullPath;
+        }
+
+        public static SettingsProperty Setting(string propertyName) =>
+            Properties.Settings.Default.Properties[propertyName];
+
+        public static async Task<bool> IsAccessibleAsync(this Uri uri)
+        {
+            string url = uri?.AbsoluteUri;
+            if (string.IsNullOrWhiteSpace(url))
+                throw new ArgumentNullException(nameof(uri));
+
+            if (url.IndexOf(':') < 0)
+                url = $"http://{url.TrimStart('/')}";
+
+            if (!Uri.IsWellFormedUriString(url, UriKind.Absolute))
+                return false;
+
+            var request = WebRequest.Create(url) as HttpWebRequest;
+            if (request is null)
+                return false;
+            request.Method = "HEAD";
+
+            try
+            {
+                using (var response = await request.GetResponseAsync() as HttpWebResponse)
+                {
+                    if (response?.StatusCode == HttpStatusCode.OK)
+                        return true;
+
+                    return false;
+                }
+            }
+            catch (WebException)
+            {
+                return false;
+            }
         }
     }
 }

@@ -8,6 +8,7 @@
              xmlns:uc="clr-namespace:InspirationEngine.WPF.UserControls"
              xmlns:cv="clr-namespace:InspirationEngine.WPF.Converters"
              xmlns:vr="clr-namespace:InspirationEngine.WPF.ValidationRules"
+             xmlns:prop="clr-namespace:InspirationEngine.WPF.Properties"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800" d:Background="White"
              Loaded="UserControl_Loaded">
@@ -55,31 +56,94 @@
                 <TextBox Text="{Binding Url}" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center"
                          KeyUp="TextBox_Commit"/>
                 <Grid Grid.Row="2" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="8,8,8,8">
-                    <Image x:Name="Image_Thumbnail" Source="{Binding CurrentThumbnail}"
-                           MouseMove="Image_MouseMove">
-                        <Image.ToolTip>
+                    <Grid MouseMove="Image_MouseMove">
+                        <Grid.ToolTip>
                             <TextBlock>
                                 <Run>Drag this thumbnail to directly Export the audio into your DAW/File System.</Run>
                                 <LineBreak/>
                                 <Run FontStyle="Italic">Note: Do not let go of the left mouse button until the progress bar is at 100%.</Run>
                             </TextBlock>
-                        </Image.ToolTip>
-                        <Image.ContextMenu>
-                            <ContextMenu>
-                                <MenuItem Header="Copy image" Click="CopyImage_Click"/>
-                                <MenuItem Header="Save image as..." Click="SaveImageAs_Click"/>
-                            </ContextMenu>
-                        </Image.ContextMenu>
-                        <Image.Style>
-                            <Style TargetType="Image">
+                        </Grid.ToolTip>
+                        <Grid.Style>
+                            <Style TargetType="Grid">
                                 <Style.Triggers>
                                     <Trigger Property="IsMouseOver" Value="True">
                                         <Setter Property="Cursor" Value="Hand"/>
                                     </Trigger>
                                 </Style.Triggers>
                             </Style>
-                        </Image.Style>
-                    </Image>
+                        </Grid.Style>
+                        <Grid Visibility="{prop:SettingBinding Path=PreviewVideo, Converter={cv:BoolToVisibilityConverter}}">
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock IsHitTestVisible="False" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Text" Value="Loading Video Preview..."/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding PreviewViewable}" Value="False">
+                                                    <Setter Property="Text" Value="Unable to load preview."/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                <ProgressBar Margin="48,0,48,0" 
+                                             IsIndeterminate="True" Height="8"/>
+                                <StackPanel.Style>
+                                    <Style TargetType="StackPanel">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding}" Value="{x:Null}">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding StreamUrl}" Value="{x:Null}">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </StackPanel.Style>
+                            </StackPanel>
+                            <StackPanel>
+                                <MediaElement x:Name="MediaElement_VideoPreview" Source="{Binding StreamUrl}" LoadedBehavior="Manual"
+                                          ScrubbingEnabled="True"/>
+                                <ProgressBar Height="4" Background="DarkGray" Foreground="Red" BorderBrush="{x:Null}" BorderThickness="0"
+                                             Maximum="{Binding Duration, Converter={cv:TimeSpanToDoubleConverter}}"
+                                             Value="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:YoutubeDownloader}, Path=PreviewVideoPosition, Converter={cv:TimeSpanToDoubleConverter}, UpdateSourceTrigger=PropertyChanged}">
+                                    <ProgressBar.Style>
+                                        <Style TargetType="ProgressBar">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding ElementName=MediaElement_VideoPreview, Path=ActualHeight, UpdateSourceTrigger=PropertyChanged}" Value="0">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding}" Value="{x:Null}">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding PreviewViewable}" Value="False">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </ProgressBar.Style>
+                                </ProgressBar>
+                            </StackPanel>
+                        </Grid>
+                        <Image x:Name="Image_Thumbnail" Source="{Binding CurrentThumbnail}">
+                            <Image.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Copy image" Click="CopyImage_Click"/>
+                                    <MenuItem Header="Save image as..." Click="SaveImageAs_Click"/>
+                                </ContextMenu>
+                            </Image.ContextMenu>
+                            <Image.Style>
+                                <Style TargetType="Image">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding PreviewViewable}" Value="True">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger> 
+                                    </Style.Triggers>
+                                </Style>
+                            </Image.Style>
+                        </Image>
+                    </Grid>
                     <Rectangle Opacity="0.5" Fill="White"
                                IsHitTestVisible="False"
                                Visibility="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:YoutubeDownloader}, Path=IsDragDropDownloading, Converter={cv:BoolToVisibilityConverter}}"/>
@@ -99,7 +163,7 @@
                             <Style TargetType="Border">
                                 <Setter Property="Visibility" Value="Hidden"/>
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding ElementName=Image_Thumbnail, Path=IsMouseOver}" Value="True">
+                                    <DataTrigger Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Grid}, Path=IsMouseOver}" Value="True">
                                         <Setter Property="Visibility" Value="Visible"/>
                                     </DataTrigger>
                                 </Style.Triggers>
@@ -123,21 +187,15 @@
                     <TextBox IsReadOnly="True" Text="{Binding TimeStart}" VerticalAlignment="Center"/>
                     <TextBox IsReadOnly="True" Text="{Binding TimeEnd}" VerticalAlignment="Center" Grid.Column="1"/>
                 </Grid>
-                <Button Content="Preview Video" Grid.Row="5" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="4,1,4,1"
-                        Click="Preview_Click"
+                <Button x:Name="Button_Preview" 
+                        Content="{x:Static local:YoutubeDownloader.PreviewVideo}" 
+                        Grid.Row="5" Grid.ColumnSpan="2" 
+                        VerticalAlignment="Center" HorizontalAlignment="Center" Padding="4,1,4,1"
+                        Click="Button_Preview_Click"
                         IsEnabled="{Binding IsValid}"/>
                 <Label Content="Export As: " VerticalAlignment="Center" Grid.Row="6"/>
-                <ComboBox Grid.Row="6" Grid.Column="1" VerticalAlignment="Center" SelectedItem="{Binding ExportFormat}" IsEditable="True">
-                    <ComboBox.ItemsSource>
-                        <x:Array Type="{x:Type sys:String}">
-                            <sys:String>wav</sys:String>
-                            <sys:String>mp3</sys:String>
-                            <sys:String>ogg</sys:String>
-                            <sys:String>m4a</sys:String>
-                            <sys:String>flac</sys:String>
-                        </x:Array>
-                    </ComboBox.ItemsSource>
-                </ComboBox>
+                <ComboBox Grid.Row="6" Grid.Column="1" VerticalAlignment="Center" SelectedItem="{Binding ExportFormat}" IsEditable="True"
+                          ItemsSource="{prop:SettingBinding Path=AudioFormats}"/>
             </Grid>
         </GroupBox>
         <GridSplitter Width="5" HorizontalAlignment="Stretch" Grid.Column="1"/>
@@ -159,6 +217,7 @@
                           SelectionMode="Single"
                           SelectionUnit="FullRow"
                           AddingNewItem="DataGridVideos_AddingNewItem"
+                          PreparingCellForEdit="DataGridVideos_PreparingCellForEdit"
                           CellEditEnding="DataGridVideos_CellEditEnding" Grid.ColumnSpan="2"
                           Validation.ErrorTemplate="{x:Null}">
                     <DataGrid.Columns>
@@ -264,8 +323,19 @@
                 </Grid>
                 <Label Content="Export To: " Grid.Row="2" VerticalAlignment="Center"/>
                 <DockPanel Grid.Row="2" Grid.Column="1" VerticalAlignment="Center">
-                    <Button Content="Browse" Width="Auto" DockPanel.Dock="Right" VerticalAlignment="Stretch" Padding="4,1,4,1"/>
-                    <TextBox Text="{vr:VRBinding {Binding ExportPath}, ValidationRule={vr:PathValidationRule}}" VerticalAlignment="Stretch"/>
+                    <Button Content="Browse" Width="Auto" DockPanel.Dock="Right" VerticalAlignment="Stretch" Padding="4,1,4,1"
+                            Click="Button_Browse_Click"/>
+                    <TextBox Text="{vr:VRBinding {Binding ExportPath}, ValidationRule={vr:PathValidationRule}}" VerticalAlignment="Stretch">
+                        <TextBox.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Command="ApplicationCommands.Copy"/>
+                                <MenuItem Command="ApplicationCommands.Cut"/>
+                                <MenuItem Command="ApplicationCommands.Paste"/>
+                                <Separator/>
+                                <MenuItem Header="Revert to Default" Click="ExportTo_Revert_Click"/>
+                            </ContextMenu>
+                        </TextBox.ContextMenu>
+                    </TextBox>
                 </DockPanel>
                 <Grid Grid.Row="3" Grid.ColumnSpan="2">
                     <Grid.ColumnDefinitions>
