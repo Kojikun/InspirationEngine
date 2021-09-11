@@ -64,7 +64,14 @@ namespace InspirationEngine.WPF.Models
                         case nameof(Video):
                             if (Video is not null)
                             {
-                                StreamUrl = new Uri(await new YoutubeInterface().GetVideoStream(Url));
+                                try
+                                {
+                                    StreamUrl = new Uri(await new YoutubeInterface().GetVideoStream(Url));
+                                }
+                                catch (Exception)
+                                {
+                                    StreamUrl = null;
+                                }
                             }
                             break;
                         case nameof(StreamUrl):
