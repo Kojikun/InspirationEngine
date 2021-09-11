@@ -377,6 +377,7 @@ namespace InspirationEngine.WPF.Models
 
             try
             {
+                (DownloadProgress as IProgress<double>).Report(0);
                 // invoke download
                 await new YoutubeInterface().Download(Url, filePath, ExportFormat, ffmpegPath, DownloadProgress, cancellationToken);
             }

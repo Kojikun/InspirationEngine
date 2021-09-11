@@ -730,9 +730,15 @@ namespace InspirationEngine.WPF.Tabs
                     IsDragDropDownloading = true;
                     var currentCursor = Mouse.OverrideCursor;
                     Mouse.OverrideCursor = Cursors.Wait;
-                    var video = await YoutubeVideoDataObject.Construct(SelectedVideo);
-                    Mouse.OverrideCursor = currentCursor;
-                    DragDrop.DoDragDrop(img, video.data, DragDropEffects.Copy);
+                    try
+                    {
+                        var video = await YoutubeVideoDataObject.Construct(SelectedVideo);
+                        DragDrop.DoDragDrop(img, video.data, DragDropEffects.Copy);
+                    }
+                    finally
+                    {
+                        Mouse.OverrideCursor = currentCursor;
+                    }
                     IsDragDropDownloading = false;
                 }
             }
