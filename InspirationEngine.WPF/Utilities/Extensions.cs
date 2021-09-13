@@ -210,5 +210,13 @@ namespace InspirationEngine.WPF.Utilities
                 return false;
             }
         }
+
+        public static T Cast<T>(this object obj)
+        {
+            if (obj is T)
+                return (T)obj;
+
+            return (T)Convert.ChangeType(obj, typeof(T));
+        }
     }
 }

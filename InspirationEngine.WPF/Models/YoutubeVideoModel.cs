@@ -231,7 +231,11 @@ namespace InspirationEngine.WPF.Models
             get => _TimeStart;
             set
             {
-                _TimeStart = value < TimeEnd ? value : TimeEnd;
+                _TimeStart =
+                    // upper bound by TimeEnd
+                    value >= TimeEnd ? TimeEnd :
+                    // lower bound by 0
+                    value <= new TimeSpan() ? new TimeSpan() : value;
                 NotifyPropertyChanged();
                 NotifyPropertyChanged("Length");
             }
@@ -249,8 +253,8 @@ namespace InspirationEngine.WPF.Models
                 _TimeEnd = 
                     // lower-bound value by TimeStart
                     value <= TimeStart ? TimeStart : 
-                    // if TotalSeconds == Duration, use duration value
-                    (Math.Floor(value.TotalSeconds) == Math.Floor(Duration?.TotalSeconds ?? 0) ? Duration.Value : value);
+                    // if TotalSeconds >= Duration, use duration value (upper bound)
+                    (Math.Floor(value.TotalSeconds) >= Math.Floor(Duration?.TotalSeconds ?? 0) ? Duration.Value : value);
                 NotifyPropertyChanged();
                 NotifyPropertyChanged("Length");
             }

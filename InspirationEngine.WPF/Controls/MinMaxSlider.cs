@@ -16,48 +16,9 @@ using System.Windows.Shapes;
 
 namespace InspirationEngine.WPF.Controls
 {
-    /// <summary>
-    /// Follow steps 1a or 1b and then 2 to use this custom control in a XAML file.
-    ///
-    /// Step 1a) Using this custom control in a XAML file that exists in the current project.
-    /// Add this XmlNamespace attribute to the root element of the markup file where it is 
-    /// to be used:
-    ///
-    ///     xmlns:MyNamespace="clr-namespace:InspirationEngine.WPF.Controls"
-    ///
-    ///
-    /// Step 1b) Using this custom control in a XAML file that exists in a different project.
-    /// Add this XmlNamespace attribute to the root element of the markup file where it is 
-    /// to be used:
-    ///
-    ///     xmlns:MyNamespace="clr-namespace:InspirationEngine.WPF.Controls;assembly=InspirationEngine.WPF.Controls"
-    ///
-    /// You will also need to add a project reference from the project where the XAML file lives
-    /// to this project and Rebuild to avoid compilation errors:
-    ///
-    ///     Right click on the target project in the Solution Explorer and
-    ///     "Add Reference"->"Projects"->[Browse to and select this project]
-    ///
-    ///
-    /// Step 2)
-    /// Go ahead and use your control in the XAML file.
-    ///
-    ///     <MyNamespace:MinMaxSlider/>
-    ///
-    /// </summary>
-    public partial class MinMaxSlider : Control
-    {
-        /// <summary>
-        /// The minimum value of the entire slider
-        /// </summary>
-        public double Minimum
-        {
-            get { return (double)GetValue(MinimumProperty); }
-            set { SetValue(MinimumProperty, value); }
-        }
-        public static readonly DependencyProperty MinimumProperty =
-            DependencyProperty.Register("Minimum", typeof(double), typeof(MinMaxSlider), new UIPropertyMetadata(0d));
 
+    public partial class MinMaxSlider : Slider
+    {
         /// <summary>
         /// The value of the thumb that defines the lowerbound of the range
         /// </summary>
@@ -80,68 +41,11 @@ namespace InspirationEngine.WPF.Controls
         public static readonly DependencyProperty UpperValueProperty =
             DependencyProperty.Register("UpperValue", typeof(double), typeof(MinMaxSlider), new UIPropertyMetadata(1d, null, UpperValueCoerceValueCallback));
 
-        /// <summary>
-        /// The maximum value of the entire slider
-        /// </summary>
-        public double Maximum
-        {
-            get { return (double)GetValue(MaximumProperty); }
-            set { SetValue(MaximumProperty, value); }
-        }
-        public static readonly DependencyProperty MaximumProperty =
-            DependencyProperty.Register("Maximum", typeof(double), typeof(MinMaxSlider), new UIPropertyMetadata(1d));
-
-        /// <summary>
-        /// Whether or not to snap to ticks defined by <see cref="TickFrequency"/>
-        /// </summary>
-        public bool IsSnapToTickEnabled
-        {
-            get { return (bool)GetValue(IsSnapToTickEnabledProperty); }
-            set { SetValue(IsSnapToTickEnabledProperty, value); }
-        }
-        public static readonly DependencyProperty IsSnapToTickEnabledProperty =
-            DependencyProperty.Register("IsSnapToTickEnabled", typeof(bool), typeof(MinMaxSlider), new UIPropertyMetadata(false));
-
-        /// <summary>
-        /// The difference between values to create a tick at
-        /// </summary>
-        public double TickFrequency
-        {
-            get { return (double)GetValue(TickFrequencyProperty); }
-            set { SetValue(TickFrequencyProperty, value); }
-        }
-        public static readonly DependencyProperty TickFrequencyProperty =
-            DependencyProperty.Register("TickFrequency", typeof(double), typeof(MinMaxSlider), new UIPropertyMetadata(0.1d));
-
-        /// <summary>
-        /// Where the ticks will visually show on the control
-        /// </summary>
-        public TickPlacement TickPlacement
-        {
-            get { return (TickPlacement)GetValue(TickPlacementProperty); }
-            set { SetValue(TickPlacementProperty, value); }
-        }
-        public static readonly DependencyProperty TickPlacementProperty =
-            DependencyProperty.Register("TickPlacement", typeof(TickPlacement), typeof(MinMaxSlider), new UIPropertyMetadata(TickPlacement.None));
-
-        /// <summary>
-        /// An ordered collection of where the ticks exist on the slider
-        /// </summary>
-        public DoubleCollection Ticks
-        {
-            get { return (DoubleCollection)GetValue(TicksProperty); }
-            set { SetValue(TicksProperty, value); }
-        }
-        public static readonly DependencyProperty TicksProperty =
-            DependencyProperty.Register("Ticks", typeof(DoubleCollection), typeof(MinMaxSlider), new UIPropertyMetadata(null));
-
 
         static MinMaxSlider()
         {
             DefaultStyleKeyProperty.OverrideMetadata(typeof(MinMaxSlider), new FrameworkPropertyMetadata(typeof(MinMaxSlider)));
         }
-
-
 
         /// <summary>
         /// Invoked when value correction is required in case the lower value exceeds the upper value

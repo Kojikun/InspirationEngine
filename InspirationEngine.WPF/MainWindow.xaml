@@ -69,6 +69,7 @@
                     <TabItem.Header>
                         <TextBlock TextAlignment="Center" Text="Settings"/>
                     </TabItem.Header>
+                    <tab:SettingsControl/>
                 </TabItem>
             </TabControl>
         </Grid>

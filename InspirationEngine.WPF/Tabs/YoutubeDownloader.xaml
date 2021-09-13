@@ -96,7 +96,8 @@
                             </StackPanel>
                             <StackPanel>
                                 <MediaElement x:Name="MediaElement_VideoPreview" Source="{Binding StreamUrl}" LoadedBehavior="Manual"
-                                          ScrubbingEnabled="True"/>
+                                              MediaEnded="MediaElement_VideoPreview_MediaEnded"
+                                              ScrubbingEnabled="True"/>
                                 <ProgressBar Height="4" Background="DarkGray" Foreground="Red" BorderBrush="{x:Null}" BorderThickness="0"
                                              Maximum="{Binding Duration, Converter={cv:TimeSpanToDoubleConverter}}"
                                              Value="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:YoutubeDownloader}, Path=PreviewVideoPosition, Converter={cv:TimeSpanToDoubleConverter}, UpdateSourceTrigger=PropertyChanged}">
@@ -139,12 +140,11 @@
                     <Rectangle Opacity="0.5" Fill="White"
                                IsHitTestVisible="False"
                                Visibility="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:YoutubeDownloader}, Path=IsDragDropDownloading, Converter={cv:BoolToVisibilityConverter}}"/>
-                    <c:CircularProgressBar
-                                            IsHitTestVisible="False"
-                                            Visibility="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:YoutubeDownloader}, Path=IsDragDropDownloading, Converter={cv:BoolToVisibilityConverter}}"
-                                            Maximum="1"
-                                            Value="{Binding DownloadProgressValue}"
-                                            />
+                    <c:CircularProgressBar IsHitTestVisible="False"
+                                           Visibility="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:YoutubeDownloader}, Path=IsDragDropDownloading, Converter={cv:BoolToVisibilityConverter}}"
+                                           Maximum="1"
+                                           Value="{Binding DownloadProgressValue}"
+                                           />
                     <Border BorderBrush="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" 
                             BorderThickness="1,1,1,1"
                             IsHitTestVisible="False">
@@ -176,8 +176,8 @@
                         <ColumnDefinition/>
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
-                    <TextBox IsReadOnly="True" Text="{Binding TimeStart}" VerticalAlignment="Center"/>
-                    <TextBox IsReadOnly="True" Text="{Binding TimeEnd}" VerticalAlignment="Center" Grid.Column="1"/>
+                    <c:TimeSpanEdit Value="{Binding TimeStart, Mode=TwoWay}" IsTextEditable="False" VerticalAlignment="Center"/>
+                    <c:TimeSpanEdit Value="{Binding TimeEnd, Mode=TwoWay}" IsTextEditable="False" VerticalAlignment="Center" Grid.Column="1"/>
                 </Grid>
                 <Button x:Name="Button_Preview" 
                         Content="{x:Static local:YoutubeDownloader.PreviewVideo}" 

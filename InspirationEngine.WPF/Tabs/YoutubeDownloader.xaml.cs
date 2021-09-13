@@ -251,9 +251,7 @@ namespace InspirationEngine.WPF.Tabs
                 PreviewVideoPosition = MediaElement_VideoPreview.Position;
                 if (MediaElement_VideoPreview.Position >= (SelectedVideo?.TimeEnd ?? new TimeSpan()))
                 {
-                    MediaElement_VideoPreview.Stop();
-                    if (s is DispatcherTimer timer && timer.Tag is Button previewButton)
-                        previewButton.Content = PreviewState.Preview;
+                    StopVideoPreview();
                 }
             };
         }
@@ -310,6 +308,10 @@ namespace InspirationEngine.WPF.Tabs
                         MediaElement_VideoPreview.Position = video.TimeStart;
                         MediaElement_VideoPreview.Play();
                         MediaElement_VideoPreview.Pause();
+                        break;
+                    case nameof(YoutubeVideoModel.TimeStart):
+                        if ((Button_Preview.Content as string) == PreviewState.Preview)
+                            PreviewVideoPosition = video?.TimeStart ?? new TimeSpan();
                         break;
                 }
             }
@@ -490,6 +492,14 @@ namespace InspirationEngine.WPF.Tabs
             await FFmpegInterface.SetExecutablesPath(Properties.Settings.Default.ffmpegDir);
         }
 
+        private void StopVideoPreview()
+        {
+            Button_Preview.Content = PreviewState.Preview;
+            MediaElement_VideoPreview.Stop();
+            PreviewVideoTracker.Stop();
+            PreviewVideoPosition = SelectedVideo?.TimeStart ?? new TimeSpan();
+        }
+
         /// <summary>
         /// Invoked when the "Preview Video" button is clicked
         /// </summary>
@@ -513,9 +523,7 @@ namespace InspirationEngine.WPF.Tabs
                             PreviewVideoTracker.Start();
                             break;
                         case StopPreview:
-                            button.Content = PreviewState.Preview;
-                            MediaElement_VideoPreview.Stop();
-                            PreviewVideoTracker.Stop();
+                            StopVideoPreview();
                             break;
                     }
                 }
@@ -768,6 +776,11 @@ namespace InspirationEngine.WPF.Tabs
             {
                 textBox.SelectAll();
             }
+        }
+
+        private void MediaElement_VideoPreview_MediaEnded(object sender, RoutedEventArgs e)
+        {
+            StopVideoPreview();
         }
     }
 }
