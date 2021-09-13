@@ -9,9 +9,12 @@ using System.Windows.Data;
 namespace InspirationEngine.WPF.Converters
 {
     /// <summary>
-    /// 
+    /// Converts an angle (in degree) to a point used in <see cref="System.Windows.Media.ArcSegment.Point"/>
     /// </summary>
-    /// <see cref="https://stackoverflow.com/a/39302102"/>
+    /// <remarks>
+    /// Used in a style that defines the ControlTemplate for <see cref="UserControls.CircularProgressBar"/>
+    /// </remarks>
+    /// <see href="https://stackoverflow.com/a/39302102"/>
     class AngleToPointConverter : BaseConverter, IValueConverter
     {
 

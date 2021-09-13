@@ -14,20 +14,82 @@ using System.Windows.Media;
 
 namespace InspirationEngine.WPF.Utilities
 {
-    /// <summary>
-    /// Simple enumeration to define the traversal order of a recursive call
-    /// </summary>
-    public enum TraversalOrder
-    {
-        BreadthFirst,
-        DepthFirst
-    }
 
     /// <summary>
     /// Extension methods relevant to the project
     /// </summary>
-    public static class Utilities
+    public static class Extensions
     {
+        #region String Extensions
+
+        /// <summary>
+        /// Attempt to get the full path for a given filename
+        /// </summary>
+        /// <param name="path">The filename to get the full path from</param>
+        /// <param name="result">The resulting path</param>
+        /// <returns>Returns true if a full path was able to be made</returns>
+        /// <remarks>Can be used to get the validity of a path</remarks>
+        public static bool TryGetFullPath(this string path, out string result)
+        {
+            // no need to waste processing power for a new exception if we can just check for empty string
+            result = string.Empty;
+            if (string.IsNullOrWhiteSpace(path))
+                return false;
+
+            bool status = false;
+            // attempt to get full path
+            try
+            {
+                result = Path.GetFullPath(path);
+                status = true;
+            }
+            // if you get caught here, you suck lmao
+            catch (ArgumentException) { }
+            catch (SecurityException) { }
+            catch (NotSupportedException) { }
+            catch (PathTooLongException) { }
+
+            return status;
+        }
+
+        /// <summary>
+        /// Converts any invalid characters within the file name into underscores
+        /// </summary>
+        /// <param name="filename">The filename to check</param>
+        /// <returns>Returns a new filename that is guarenteed to have valid characters</returns>
+        public static string ToValidFileName(this string filename) =>
+            string.Join('_', filename.Split(Path.GetInvalidFileNameChars(), StringSplitOptions.RemoveEmptyEntries));
+
+        /// <summary>
+        /// Returns a fully qualified file path that is guarenteed to not exist
+        /// </summary>
+        /// <param name="path">The path to the file</param>
+        /// <returns>Returns a fully qualified path that leads to a file that has yet to exist</returns>
+        public static string EnsureUniqueFile(this string path)
+        {
+            var fullPath = Path.GetFullPath(path);
+            int i = 1;
+            var og_filename = Path.GetFileNameWithoutExtension(fullPath);
+
+            // if file already exists
+            while (File.Exists(fullPath))
+            {
+                var dirParts = (
+                    dir: Path.GetDirectoryName(fullPath),
+                    file: Path.GetFileNameWithoutExtension(fullPath),
+                    ext: Path.GetExtension(fullPath));
+                dirParts.file = $"{og_filename} ({i++})";
+                // Filename will now be "dir\path (i).ext" kinda like how Windows deals with copies
+                fullPath = Path.Combine(dirParts.dir, $"{dirParts.file}{dirParts.ext}");
+            }
+
+            return fullPath;
+        }
+
+        #endregion
+
+        #region VisualTree Extensions
+
         /// <summary>
         /// Returns a list of <typeparamref name="T"/> that are descendants of <paramref name="dependencyObject"/> on the VisualTree
         /// </summary>
@@ -102,6 +164,8 @@ namespace InspirationEngine.WPF.Utilities
                 return null;
         }
 
+        #endregion
+
         /// <summary>
         /// Autofit the column width based off of its contents
         /// </summary>
@@ -113,93 +177,6 @@ namespace InspirationEngine.WPF.Utilities
             dataGrid.UpdateLayout();
             column.Width = DataGridLength.Auto;
         }
-
-        /// <summary>
-        /// Resets the state of a CancellationTokenSource and requests a brand new token
-        /// </summary>
-        /// <param name="source">The CancellationTokenSource to dispose and recreate</param>
-        /// <returns>Returns a shiny new token from the shiny new CancellationTokenSource</returns>
-        public static CancellationToken RequestToken(ref CancellationTokenSource source)
-        {
-            // dispose source
-            if (source is not null)
-            {
-                source.Dispose();
-            }
-
-            // reinstantiate sourece
-            source = new CancellationTokenSource();
-
-            // return brand-spankin new token
-            return source.Token;
-        }
-
-        /// <summary>
-        /// Attempt to get the full path for a given filename
-        /// </summary>
-        /// <param name="path">The filename to get the full path from</param>
-        /// <param name="result">The resulting path</param>
-        /// <returns>Returns true if a full path was able to be made</returns>
-        /// <remarks>Can be used to get the validity of a path</remarks>
-        public static bool TryGetFullPath(string path, out string result)
-        {
-            // no need to waste processing power for a new exception if we can just check for empty string
-            result = string.Empty;
-            if (string.IsNullOrWhiteSpace(path))
-                return false;
-
-            bool status = false;
-            // attempt to get full path
-            try
-            {
-                result = Path.GetFullPath(path);
-                status = true;
-            }
-            // if you get caught here, you suck lmao
-            catch (ArgumentException) { }
-            catch (SecurityException) { }
-            catch (NotSupportedException) { }
-            catch (PathTooLongException) { }
-
-            return status;
-        }
-
-        /// <summary>
-        /// Converts any invalid characters within the file name into underscores
-        /// </summary>
-        /// <param name="filename">The filename to check</param>
-        /// <returns>Returns a new filename that is guarenteed to have valid characters</returns>
-        public static string ToValidFileName(this string filename) =>
-            string.Join('_', filename.Split(Path.GetInvalidFileNameChars(), StringSplitOptions.RemoveEmptyEntries));
-
-        /// <summary>
-        /// Returns a fully qualified file path that is guarenteed to not exist
-        /// </summary>
-        /// <param name="path">The path to the file</param>
-        /// <returns>Returns a fully qualified path that leads to a file that has yet to exist</returns>
-        public static string EnsureUniqueFile(this string path)
-        {
-            var fullPath = Path.GetFullPath(path);
-            int i = 1;
-            var og_filename = Path.GetFileNameWithoutExtension(fullPath);
-
-            // if file already exists
-            while (File.Exists(fullPath))
-            {
-                var dirParts = (
-                    dir: Path.GetDirectoryName(fullPath),
-                    file: Path.GetFileNameWithoutExtension(fullPath),
-                    ext: Path.GetExtension(fullPath));
-                dirParts.file = $"{og_filename} ({i++})";
-                // Filename will now be "dir\path (i).ext" kinda like how Windows deals with copies
-                fullPath = Path.Combine(dirParts.dir, $"{dirParts.file}{dirParts.ext}");
-            }
-
-            return fullPath;
-        }
-
-        public static SettingsProperty Setting(string propertyName) =>
-            Properties.Settings.Default.Properties[propertyName];
 
         public static async Task<bool> IsAccessibleAsync(this Uri uri)
         {

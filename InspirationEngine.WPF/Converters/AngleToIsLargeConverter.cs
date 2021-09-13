@@ -8,12 +8,14 @@ using System.Windows.Data;
 namespace InspirationEngine.WPF.Converters
 {
     /// <summary>
-    /// 
+    /// Converts a angle (in degrees) to a bool used for <see cref="System.Windows.Media.ArcSegment.IsLargeArc"/>
     /// </summary>
-    /// <see cref="https://stackoverflow.com/a/39302102"/>
+    /// <remarks>
+    /// Used in a style that defines the ControlTemplate for <see cref="UserControls.CircularProgressBar"/>
+    /// </remarks>
+    /// <see href="https://stackoverflow.com/a/39302102"/>
     class AngleToIsLargeConverter : BaseConverter, IValueConverter
     {
-
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             double angle = (double)value;

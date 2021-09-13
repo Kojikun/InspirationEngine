@@ -7,12 +7,12 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Animation;
 
-namespace InspirationEngine.WPF.UserControls
+namespace InspirationEngine.WPF.Controls
 {
     /// <summary>
     /// Implementation of a Circular Progress Bar
     /// </summary>
-    /// <see cref="https://stackoverflow.com/a/39302102"/>
+    /// <see href="https://stackoverflow.com/a/39302102"/>
     public partial class CircularProgressBar : ProgressBar
     {
         public CircularProgressBar()

@@ -14,7 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.IO;
-using static InspirationEngine.WPF.Utilities.Utilities;
+using InspirationEngine.WPF.Utilities;
 
 namespace InspirationEngine.WPF
 {
@@ -29,11 +29,6 @@ namespace InspirationEngine.WPF
         public MainWindow()
         {
             InitializeComponent();
-            if (!TryGetFullPath(Properties.Settings.Default.SamplesDir, out _))
-            {
-                Properties.Settings.Default.SamplesDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyMusic), @"Inspiration Engine\Downloaded Samples");
-                Properties.Settings.Default.Save();
-            }
         }
 
         /// <summary>

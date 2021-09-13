@@ -1,6 +1,7 @@
 ﻿using InspirationEngine.Core;
 using InspirationEngine.WPF.Models;
-using static InspirationEngine.WPF.Utilities.Utilities;
+using InspirationEngine.WPF.Utilities;
+using static InspirationEngine.WPF.Utilities.Static;
 using InspirationEngine.WPF.Properties;
 using System;
 using System.Collections.Generic;
@@ -129,7 +130,7 @@ namespace InspirationEngine.WPF.Tabs
         public static readonly DependencyProperty ExportPathProperty =
             DependencyProperty.Register("ExportPath", typeof(string), typeof(YoutubeDownloader),
                 new PropertyMetadata(Properties.Settings.Default.SamplesDir),
-                value => TryGetFullPath(value as string, out _));
+                value => (value as string)?.TryGetFullPath(out _) ?? false);
 
         /// <summary>
         /// Bound to the Export File Destination radio group
@@ -268,7 +269,7 @@ namespace InspirationEngine.WPF.Tabs
             {
                 CanExport =
                     videos.Count > 0 &&
-                    TryGetFullPath(ExportPath, out _) &&
+                    ExportPath.TryGetFullPath(out _) &&
                     videos.Any(video => video.IsValid);
             }
         }
@@ -748,7 +749,7 @@ namespace InspirationEngine.WPF.Tabs
         private void Button_Browse_Click(object sender, RoutedEventArgs e)
         {
             var dlg = new VistaFolderBrowserDialog();
-            if (TryGetFullPath(ExportPath, out string startingPath))
+            if (ExportPath.TryGetFullPath(out string startingPath))
                 dlg.SelectedPath = startingPath;
 
             if (dlg.ShowDialog() == true)

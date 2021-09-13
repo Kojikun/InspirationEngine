@@ -14,13 +14,38 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace InspirationEngine.WPF.UserControls
+namespace InspirationEngine.WPF.Controls
 {
     /// <summary>
-    /// Defines a Slider control with two thumbs to define a range of values
+    /// Follow steps 1a or 1b and then 2 to use this custom control in a XAML file.
+    ///
+    /// Step 1a) Using this custom control in a XAML file that exists in the current project.
+    /// Add this XmlNamespace attribute to the root element of the markup file where it is 
+    /// to be used:
+    ///
+    ///     xmlns:MyNamespace="clr-namespace:InspirationEngine.WPF.Controls"
+    ///
+    ///
+    /// Step 1b) Using this custom control in a XAML file that exists in a different project.
+    /// Add this XmlNamespace attribute to the root element of the markup file where it is 
+    /// to be used:
+    ///
+    ///     xmlns:MyNamespace="clr-namespace:InspirationEngine.WPF.Controls;assembly=InspirationEngine.WPF.Controls"
+    ///
+    /// You will also need to add a project reference from the project where the XAML file lives
+    /// to this project and Rebuild to avoid compilation errors:
+    ///
+    ///     Right click on the target project in the Solution Explorer and
+    ///     "Add Reference"->"Projects"->[Browse to and select this project]
+    ///
+    ///
+    /// Step 2)
+    /// Go ahead and use your control in the XAML file.
+    ///
+    ///     <MyNamespace:MinMaxSlider/>
+    ///
     /// </summary>
-    /// <see cref="https://stackoverflow.com/questions/5395957/wpf-slider-with-two-thumbs"/>
-    public partial class MinMaxSlider : UserControl
+    public partial class MinMaxSlider : Control
     {
         /// <summary>
         /// The minimum value of the entire slider
@@ -111,13 +136,12 @@ namespace InspirationEngine.WPF.UserControls
             DependencyProperty.Register("Ticks", typeof(DoubleCollection), typeof(MinMaxSlider), new UIPropertyMetadata(null));
 
 
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        public MinMaxSlider()
+        static MinMaxSlider()
         {
-            InitializeComponent();
+            DefaultStyleKeyProperty.OverrideMetadata(typeof(MinMaxSlider), new FrameworkPropertyMetadata(typeof(MinMaxSlider)));
         }
+
+
 
         /// <summary>
         /// Invoked when value correction is required in case the lower value exceeds the upper value

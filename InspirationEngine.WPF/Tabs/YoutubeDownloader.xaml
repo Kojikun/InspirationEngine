@@ -5,21 +5,13 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:InspirationEngine.WPF.Tabs"
-             xmlns:uc="clr-namespace:InspirationEngine.WPF.UserControls"
+             xmlns:c="clr-namespace:InspirationEngine.WPF.Controls"
              xmlns:cv="clr-namespace:InspirationEngine.WPF.Converters"
              xmlns:vr="clr-namespace:InspirationEngine.WPF.ValidationRules"
              xmlns:prop="clr-namespace:InspirationEngine.WPF.Properties"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800" d:Background="White"
              Loaded="UserControl_Loaded">
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="../Resources/Icons.xaml"/>
-                <ResourceDictionary Source="../Resources/CustomControls.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </UserControl.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2*"/>
@@ -147,7 +139,7 @@
                     <Rectangle Opacity="0.5" Fill="White"
                                IsHitTestVisible="False"
                                Visibility="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:YoutubeDownloader}, Path=IsDragDropDownloading, Converter={cv:BoolToVisibilityConverter}}"/>
-                    <uc:CircularProgressBar Style="{StaticResource CircularProgressBar}"
+                    <c:CircularProgressBar
                                             IsHitTestVisible="False"
                                             Visibility="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:YoutubeDownloader}, Path=IsDragDropDownloading, Converter={cv:BoolToVisibilityConverter}}"
                                             Maximum="1"
@@ -171,7 +163,7 @@
                         </Border.Style>
                     </Border>
                 </Grid>
-                <uc:MinMaxSlider Grid.Row="3" Grid.ColumnSpan="2"
+                <c:MinMaxSlider Grid.Row="3" Grid.ColumnSpan="2"
                                  Minimum="0"
                                  Maximum="{Binding Duration, Converter={cv:TimeSpanToDoubleConverter}}"
                                  LowerValue="{Binding TimeStart, Mode=TwoWay, Converter={cv:TimeSpanToDoubleConverter}, UpdateSourceTrigger=PropertyChanged}"
